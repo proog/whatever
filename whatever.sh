@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -o nounset
-prefix="$"
+prefix=$'\n$'
 executed=0
 
 # git
@@ -11,11 +11,21 @@ if git rev-parse --is-inside-work-tree 1> /dev/null 2>&1 ; then
 
   # if current branch has an upstream
   if git rev-parse --abbrev-ref '@{u}' 1> /dev/null 2>&1; then
-    if git diff-index --quiet HEAD --; then
-      echo "$prefix git pull"
-      git pull
-    else
-      echo "Dirty work dir, won't pull"
+    git diff-index --quiet HEAD --
+    stash=$?
+
+    if (( stash == 1 )); then
+      utcnow=$(date -u)
+      echo "$prefix git stash -m \"whatever.sh auto-stash at $utcnow\""
+      git stash -m "whatever.sh auto-stash at $utcnow"
+    fi
+
+    echo "$prefix git pull --rebase"
+    git pull --rebase
+
+    if (( stash == 1 )); then
+      echo "$prefix git stash pop"
+      git stash pop
     fi
   fi
 
