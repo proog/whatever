@@ -16,8 +16,8 @@ if git rev-parse --is-inside-work-tree 1> /dev/null 2>&1 ; then
 
     if (( stash == 1 )); then
       utcnow=$(date -u)
-      echo "$prefix git stash -m \"whatever.sh auto-stash at $utcnow\""
-      git stash -m "whatever.sh auto-stash at $utcnow"
+      echo "$prefix git stash push -m \"whatever.sh auto-stash at $utcnow\""
+      git stash push -m "whatever.sh auto-stash at $utcnow"
     fi
 
     echo "$prefix git pull --rebase"
