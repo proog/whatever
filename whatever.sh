@@ -9,8 +9,8 @@ if git rev-parse --is-inside-work-tree 1> /dev/null 2>&1 ; then
   echo "$prefix git fetch --all --prune --tags"
   git fetch --all --prune --tags
 
-  # if current branch has an upstream
-  if git rev-parse --abbrev-ref '@{u}' 1> /dev/null 2>&1; then
+  # if the current branch has an upstream and differs from the local branch
+  if git rev-parse '@{u}' 1> /dev/null 2>&1 && [ "$(git rev-parse HEAD)" != "$(git rev-parse '@{u}')" ]; then
     git diff-index --quiet HEAD --
     stash=$?
 
