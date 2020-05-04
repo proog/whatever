@@ -7,7 +7,7 @@ The intent is to get the working copy into a ready-to-code state without thinkin
 
 | Condition                                            | Command                                                      |
 | ---------------------------------------------------- | ------------------------------------------------------------ |
-| Inside git working copy                              | `git fetch --all --prune --tags`                             |
+| Inside git working copy                              | `git fetch --all --prune --tags --force`                     |
 | Inside git working copy and current branch is behind | `git pull --rebase` (automatic stash if uncommitted changes) |
 | `package.json` and `yarn.lock`                       | `yarn install`                                               |
 | `package.json` (without `yarn.lock`)                 | `npm install`                                                |
