@@ -6,8 +6,8 @@ executed=0
 
 # git
 if git rev-parse --is-inside-work-tree 1> /dev/null 2>&1 ; then
-  echo "$prefix git fetch --all --prune --tags"
-  git fetch --all --prune --tags
+  echo "$prefix git fetch --all --prune --tags --force"
+  git fetch --all --prune --tags --force
 
   # if the current branch has an upstream and differs from the local branch
   if git rev-parse '@{u}' 1> /dev/null 2>&1 && [ "$(git rev-parse HEAD)" != "$(git rev-parse '@{u}')" ]; then
