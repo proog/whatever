@@ -5,6 +5,8 @@ Whatever is a simple script that automates the commands I usually want to run wh
 It runs in the current directory and starts by fetching and pulling from git. It then restores packages for various package managers, depending on the presence of known files, such as `package.json` or `Gemfile`.
 The intent is to get the working copy into a ready-to-code state without thinking too much about it. _Just do whatever._
 
+## Operations
+
 | Condition                                            | Command                                                      |
 | ---------------------------------------------------- | ------------------------------------------------------------ |
 | Inside git working copy                              | `git fetch --all --prune --tags --force`                     |
@@ -17,3 +19,10 @@ The intent is to get the working copy into a ready-to-code state without thinkin
 | `Gemfile`                                            | `bundle install`                                             |
 | `*.sln` or `*.csproj`                                | `dotnet restore`                                             |
 | `gradlew`                                            | `./gradlew`                                                  |
+
+## Flags
+
+| Flag                   | Description                                                        |
+| ---------------------- | ------------------------------------------------------------------ |
+| `--no-pull` \| `-p`    | Skip pulling from git, even if branch is behind (will still fetch) |
+| `--no-install` \| `-i` | Skip installing/restoring dependencies                             |

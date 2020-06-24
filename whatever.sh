@@ -2,7 +2,33 @@
 
 set -o nounset
 prefix=$'\n$'
-executed=0
+executed=false
+nopull=false
+noinstall=false
+unknownflag=false
+
+# parse args
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    "-p"|"--no-pull")
+    nopull=true
+    shift # shift once since flags have no values
+    ;;
+    "-i"|"--no-install")
+    noinstall=true
+    shift # shift once since flags have no values
+    ;;
+    *) # unknown flag/switch
+    unknownflag=true
+    shift
+    ;;
+  esac
+done
+
+if [ "$unknownflag" = true ]; then
+  echo "Unknown flag"
+  exit 1
+fi
 
 # git
 if git rev-parse --is-inside-work-tree 1> /dev/null 2>&1 ; then
@@ -10,7 +36,7 @@ if git rev-parse --is-inside-work-tree 1> /dev/null 2>&1 ; then
   git fetch --all --prune --tags --force
 
   # if the current branch has an upstream and differs from the local branch
-  if git rev-parse '@{u}' 1> /dev/null 2>&1 && [ "$(git rev-parse HEAD)" != "$(git rev-parse '@{u}')" ]; then
+  if [ "$nopull" = false ] && git rev-parse '@{u}' 1> /dev/null 2>&1 && [ "$(git rev-parse HEAD)" != "$(git rev-parse '@{u}')" ]; then
     git diff-index --quiet HEAD --
     stash=$?
 
@@ -29,62 +55,64 @@ if git rev-parse --is-inside-work-tree 1> /dev/null 2>&1 ; then
     fi
   fi
 
-  executed=1
+  executed=true
 fi
 
-# npm/yarn
-if [ -f "package.json" ]; then
-  if [ -f "yarn.lock" ]; then
-    echo "$prefix yarn install"
-    yarn install
-  else
-    echo "$prefix npm install"
-    npm install
+if [ "$noinstall" = false ]; then
+  # npm/yarn
+  if [ -f "package.json" ]; then
+    if [ -f "yarn.lock" ]; then
+      echo "$prefix yarn install"
+      yarn install
+    else
+      echo "$prefix npm install"
+      npm install
+    fi
+
+    executed=true
   fi
 
-  executed=1
+  # bower
+  if [ -f "bower.json" ]; then
+    echo "$prefix bower install"
+    bower install
+    executed=true
+  fi
+
+  # python
+  if [ -f "Pipfile" ]; then
+    echo "$prefix pipenv install --dev"
+    pipenv install --dev
+    executed=true
+  elif [ -f "requirements.txt" ]; then
+    echo "$prefix pip3 install -r requirements.txt"
+    pip3 install -r requirements.txt
+    executed=true
+  fi
+
+  # ruby
+  if [ -f "Gemfile" ]; then
+    echo "$prefix bundle install"
+    bundle install
+    executed=true
+  fi
+
+  # msbuild
+  if ls ./*.sln 1> /dev/null 2>&1 || ls ./*.csproj 1> /dev/null 2>&1; then
+    echo "$prefix dotnet restore"
+    dotnet restore
+    executed=true
+  fi
+
+  # gradle
+  if [ -f "gradlew" ]; then
+    echo "$prefix ./gradlew"
+    ./gradlew
+    executed=true
+  fi
 fi
 
-# bower
-if [ -f "bower.json" ]; then
-  echo "$prefix bower install"
-  bower install
-  executed=1
-fi
-
-# python
-if [ -f "Pipfile" ]; then
-  echo "$prefix pipenv install --dev"
-  pipenv install --dev
-  executed=1
-elif [ -f "requirements.txt" ]; then
-  echo "$prefix pip3 install -r requirements.txt"
-  pip3 install -r requirements.txt
-  executed=1
-fi
-
-# ruby
-if [ -f "Gemfile" ]; then
-  echo "$prefix bundle install"
-  bundle install
-  executed=1
-fi
-
-# msbuild
-if ls ./*.sln 1> /dev/null 2>&1 || ls ./*.csproj 1> /dev/null 2>&1; then
-  echo "$prefix dotnet restore"
-  dotnet restore
-  executed=1
-fi
-
-# gradle
-if [ -f "gradlew" ]; then
-  echo "$prefix ./gradlew"
-  ./gradlew
-  executed=1
-fi
-
-if (( executed == 0 )); then
+if [ "$executed" = false ]; then
   echo "Found nothing to run."
   exit 1
 fi
